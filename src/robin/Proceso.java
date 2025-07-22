@@ -172,23 +172,74 @@ public class Proceso extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        if((Integer.parseInt(getRafaga.getText()))<=50){
-            ingresarDatos();
-            getQuantum.setEditable(false);
-        } else {
-            JOptionPane.showMessageDialog(this, "La rafaga es incorrecta!");
+        // Validar que los campos no estén vacíos
+        if (getRafaga.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor ingrese una ráfaga de CPU válida.");
+            getRafaga.grabFocus();
+            return;
         }
         
-    }
+        if (getQuantum.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor ingrese un quantum válido.");
+            getQuantum.grabFocus();
+            return;
+        }
+        
+        try {
+            int rafaga = Integer.parseInt(getRafaga.getText().trim());
+            int quantum = Integer.parseInt(getQuantum.getText().trim());
+            
+            // Validar que los valores sean positivos
+            if (rafaga <= 0) {
+                JOptionPane.showMessageDialog(this, "La ráfaga debe ser un número positivo mayor a 0.");
+                getRafaga.grabFocus();
+                return;
+            }
+            
+            if (quantum <= 0) {
+                JOptionPane.showMessageDialog(this, "El quantum debe ser un número positivo mayor a 0.");
+                getQuantum.grabFocus();
+                return;
+            }
+            
+            // Validar límites razonables
+            if (rafaga > 50) {
+                JOptionPane.showMessageDialog(this, "La ráfaga no puede ser mayor a 50 unidades.");
+                getRafaga.grabFocus();
+                return;
+            }
+            
+            if (quantum > rafaga) {
+                JOptionPane.showMessageDialog(this, "El quantum no puede ser mayor que la ráfaga más grande.");
+                getQuantum.grabFocus();
+                return;
+            }
+            
+            // Si todas las validaciones pasan, agregar el proceso
+            ingresarDatos();
+            getQuantum.setEditable(false);
+            
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Por favor ingrese solo números enteros válidos.");
+            getRafaga.grabFocus();
+        }
+        
+    }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // Validar que hay procesos para simular
+        if (listaRafagas.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay procesos para simular. Agregue al menos un proceso.");
+            return;
+        }
+        
+        // Limpiar tabla de resultados antes de empezar
         DefaultTableModel modelo = (DefaultTableModel) tablaResultados.getModel();
         modelo.setRowCount(0);
         
-        
-        int tiempoGlobal = 0;
-        boolean hayProcesosEnEjecucion = true;
+        try {
+            int tiempoGlobal = 0;
+            boolean hayProcesosEnEjecucion = true;
         
         
         ArrayList<Integer> rafagasOriginales = new ArrayList<>();
@@ -201,9 +252,14 @@ public class Proceso extends javax.swing.JFrame {
         
         System.out.println("Iniciando algoritmo Round Robin...");
         
+        // Protección contra bucles infinitos
+        int iteraciones = 0;
+        final int MAX_ITERACIONES = 1000;
+        
         // Algoritmo Round Robin
-        while(hayProcesosEnEjecucion){
+        while(hayProcesosEnEjecucion && iteraciones < MAX_ITERACIONES){
             hayProcesosEnEjecucion = false;
+            iteraciones++;
             
             for(int i = 0; i < listaRafagas.size(); i++){
                 if(listaRafagas.get(i).getRafaga() > 0){
@@ -233,6 +289,11 @@ public class Proceso extends javax.swing.JFrame {
             }
         }
         
+        if (iteraciones >= MAX_ITERACIONES) {
+            JOptionPane.showMessageDialog(this, "Error: El algoritmo no converge. Verifique los datos de entrada.");
+            return;
+        }
+        
         System.out.println("Algoritmo completado. Tiempo total: " + tiempoGlobal);
        
         double tiempoEsperaTotal = 0;
@@ -242,6 +303,11 @@ public class Proceso extends javax.swing.JFrame {
             int tFinalizacion = tiemposFinalizacion.get(i);
             int tProceso = tFinalizacion - tLlegada; 
             int tEspera = tProceso - rafagasOriginales.get(i); 
+            
+            // Validar que los tiempos sean coherentes
+            if (tEspera < 0) {
+                tEspera = 0;
+            }
             
             tiempoEsperaTotal += tEspera;
             
@@ -260,6 +326,11 @@ public class Proceso extends javax.swing.JFrame {
         jTextField1.setText(String.format("%.2f", tiempoPromedioEspera));
         
         System.out.println("Tiempo promedio de espera: " + tiempoPromedioEspera);
+        
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error durante la simulación: " + e.getMessage());
+            e.printStackTrace();
+        }
                 
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -333,7 +404,11 @@ public class Proceso extends javax.swing.JFrame {
             System.out.println(mensaje);*/
             
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Imbecil!");
+            JOptionPane.showMessageDialog(this, "Error: Por favor ingrese solo números enteros válidos.");
+            getRafaga.grabFocus();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error inesperado: " + e.getMessage());
+            e.printStackTrace();
         }
             
     }

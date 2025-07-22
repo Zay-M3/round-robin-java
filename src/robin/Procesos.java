@@ -22,6 +22,20 @@ public class Procesos {
     //constructor para la entrada
 
     public Procesos(int numProcesos, int rafaga, int quantum, int time) {
+        // Validaciones de entrada
+        if (numProcesos <= 0) {
+            throw new IllegalArgumentException("El número de proceso debe ser positivo");
+        }
+        if (rafaga <= 0) {
+            throw new IllegalArgumentException("La ráfaga debe ser positiva");
+        }
+        if (quantum <= 0) {
+            throw new IllegalArgumentException("El quantum debe ser positivo");
+        }
+        if (time < 0) {
+            throw new IllegalArgumentException("El tiempo no puede ser negativo");
+        }
+        
         this.numProcesos = numProcesos;
         this.rafaga = rafaga;
         this.quantum = quantum;
@@ -41,6 +55,9 @@ public class Procesos {
     }
 
     public void setRafaga(int rafaga) {
+        if (rafaga < 0) {
+            throw new IllegalArgumentException("La ráfaga no puede ser negativa");
+        }
         this.rafaga = rafaga;
     }
 
@@ -49,6 +66,9 @@ public class Procesos {
     }
 
     public void setQuantum(int quantum) {
+        if (quantum <= 0) {
+            throw new IllegalArgumentException("El quantum debe ser positivo");
+        }
         this.quantum = quantum;
     }
 
